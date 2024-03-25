@@ -1,0 +1,608 @@
+ddrpostgres
+postgres
+admin@123
+
+
+pip install virtualenv
+python -m venv venv
+venv\Scripts\activate.bat
+uvicorn main:app --reload
+
+pip install fastapi 
+pip install uvicorn
+
+pip freeze > requirements.txt
+
+
+create main.py file
+
+--------------------------------------
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+------------------------------------------
+Run the application
+uvicorn main:app --reload
+
+--------------------
+
+***********************************************SQLAlchemy**************************************
+SQLAlchemy is a powerful and flexible toolkit for working with databases in Python. 
+Explaining it to beginners in simple language can be done by breaking down its core concepts:
+
+ORM (Object-Relational Mapping):
+Imagine you have a Python class that represents an object in your code, like a Note class. ORM helps you interact with a 
+database as if it were a collection of Python objects. So, you can think of your database rows as instances of your Python class.
+
+Declarative Base:
+SQLAlchemy provides a base class, usually named Base, which you use to define your Python classes that map to database tables. 
+This class includes information about how your Python objects relate to database tables.
+
+Engine:
+The engine is like a bridge between your Python code and the database. It knows how to connect to the database and
+ provides a way to execute SQL queries.
+
+Session:
+Think of a session as a workspace where you interact with the database. You create a session, perform some operations
+ (like adding, updating, or querying data), and then commit those changes to the database.
+
+Query:
+In SQLAlchemy, a query is like asking the database for specific information. You create a query to retrieve data 
+from the database, and SQLAlchemy takes care of converting it into SQL behind the scenes.
+
+Models:
+Your Python classes that inherit from the Base class are your models. Each model represents a table in your database,
+ and instances of these classes represent rows in those tables.
+
+Mapping Columns:
+When you define attributes in your Python class, SQLAlchemy helps you map them to columns in the corresponding database table.
+ For example, a title attribute in your Note class might map to a "title" column in the database.
+
+Relationships:
+If your database has multiple tables that are related (like a User table and a Post table), SQLAlchemy helps you define
+ relationships between them. For instance, a User might have many Post objects associated with them.
+
+Session Lifecycle:
+A session has a lifecycle: create a session, do some database operations, and then either commit those changes to make them 
+permanent or roll them back if something went wrong.
+**********************************************************************************************
+
+SQL Alchemy
+
+pip install sqlalchemy[asyncio] asyncpg
+pip freeze > requirements.txt
+pip install python-dotenv
+
+
+create: db.py
+-----------------------------------
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import DeclarativeBase
+from dotenv import load_dotenv
+import os
+load_dotenv() #engine object to connect to db
+engine = create_async_engine(
+    url= os.getenv('DATABASE_URL'),
+    echo = True
+)
+#base class for creating database models
+class Base(DeclarativeBase):
+    pass
+------------------------
+**************************************************
+Import Statements:
+
+python
+Copy code
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import DeclarativeBase
+from dotenv import load_dotenv
+import os
+create_async_engine: Importing the function that creates an asynchronous SQLAlchemy engine.
+DeclarativeBase: Importing the base class for creating declarative SQLAlchemy models.
+load_dotenv: Importing a function to load environment variables from a .env file.
+os: Importing the os module for interacting with the operating system.
+Load Environment Variables:
+
+python
+Copy code
+load_dotenv()
+This line loads environment variables from a file named .env. The .env file typically contains configuration settings, such as database URLs or API keys.
+Create Asynchronous SQLAlchemy Engine:
+
+python
+Copy code
+engine = create_async_engine(
+    url=os.getenv('DATABASE_URL'),
+    echo=True
+)
+create_async_engine: This function is used to create an asynchronous SQLAlchemy engine. It takes a database URL as a parameter, and in this case, it retrieves the database URL from the environment variables using os.getenv('DATABASE_URL').
+echo=True: This parameter enables logging of database interactions, providing information about the SQL statements being executed.
+Base Class for Database Models:
+
+python
+Copy code
+class Base(DeclarativeBase):
+    pass
+This defines a base class named Base that inherits from DeclarativeBase. This class will be used as the base for creating other database models.
+*************************************************
+-----------------------------------
+
+Install: https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
+Create:  .env file
+'DATABASE_URL' = 'postgresql+asyncpg://postgres:admin@localhost/noted_db'
+'SECRET_KEY' = 'thisisthesecreatkeysdsd543434lklk@#@#@#'
+'ALGORITHM' = "HS256"
+'DATABASE_URL' = 'postgresql+asyncpg://postgres:admin%40123@ddrpostgres.postgres.database.azure.com:5432/noted_db'
+
+Create:  models.py file
+-----------------------------------
+
+from db import Base
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Text
+from datetime import datetime
+"""
+class Note:
+    id str
+    title str
+    content str
+    date_created datetime
+"""
+#the database model for notes
+class Note(Base):
+    __tablename__ = "notes"
+    id: Mapped[str] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    date_created: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    def __repr__(self) -> str:
+        return f"<Note {self.title} at {self.date_created}>"
+
+-----------------------------------
+****************************************************************************************************************************************************************
+Imports:
+
+python
+Copy code
+from db import Base
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Text
+from datetime import datetime
+from db import Base: Importing the Base class, which is likely a SQLAlchemy base class for declarative models.
+from sqlalchemy.orm import Mapped, mapped_column: Importing the necessary components for defining mapped columns.
+from sqlalchemy import Text: Importing the Text type from SQLAlchemy for handling text data types.
+from datetime import datetime: Importing the datetime class from the datetime module.
+Class Definition:
+
+python
+Copy code
+class Note(Base):
+This class inherits from the Base class, indicating that it is a SQLAlchemy model.
+Table Name:
+
+python
+Copy code
+__tablename__ = "notes"
+This line specifies the name of the table in the database, which is set to "notes."
+Column Definitions:
+
+python
+Copy code
+id: Mapped[str] = mapped_column(primary_key=True)
+title: Mapped[str] = mapped_column(nullable=False)
+content: Mapped[str] = mapped_column(Text, nullable=False)
+date_created: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+id: A mapped column with a data type of str, marked as the primary key.
+title: A mapped column with a data type of str and marked as non-nullable.
+content: A mapped column with a data type of Text (likely for longer text) and marked as non-nullable.
+date_created: A mapped column with a data type of datetime and a default value set to the current UTC time.
+__repr__ Method:
+
+python
+Copy code
+def __repr__(self) -> str:
+    return f"<Note {self.title} at {self.date_created}>"
+This method provides a string representation of the Note object when it is printed or converted to a string. It includes the title and the creation date.
+**********************************************************************************************************
+
+Create: create_db.py
+
+-----------------------------------
+
+from db import Base, engine
+import asyncio
+async def create_db():
+    """
+    coroutine responsible for creating database tables
+    """
+    async with engine.begin() as conn:
+        from models import Note
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+    await engine.dispose()
+asyncio.run(create_db())
+
+-----------------------------------
+Run
+python create_db.py
+
+***************************************************************************************************
+Imports:
+
+python
+Copy code
+from db import Base, engine
+import asyncio
+from db import Base, engine: Importing the Base class and the engine object from the db module. The Base class is likely a SQLAlchemy base class for declarative models, and the engine is the asynchronous SQLAlchemy engine for connecting to the database.
+import asyncio: Importing the asyncio module for handling asynchronous tasks.
+create_db Coroutine:
+
+python
+Copy code
+async def create_db():
+Defining an asynchronous coroutine named create_db. Coroutines are used in asynchronous programming in Python.
+Asynchronous Context Manager (async with):
+
+python
+Copy code
+async with engine.begin() as conn:
+Using an asynchronous context manager to create a connection (conn) to the database using the engine. The async with block ensures proper handling of resources.
+Dropping and Creating Database Tables:
+
+python
+Copy code
+from models import Note
+await conn.run_sync(Base.metadata.drop_all)
+await conn.run_sync(Base.metadata.create_all)
+Importing the Note model from the models module.
+Using await conn.run_sync() to asynchronously execute the drop_all and create_all methods on the Base.metadata. This is responsible for dropping all existing tables and creating new ones based on the defined models. Note that these operations are executed within the same transaction.
+Disposing of the Engine:
+
+python
+Copy code
+await engine.dispose()
+Using await engine.dispose() to dispose of the engine. This is important for cleaning up resources associated with the engine after the coroutine has completed.
+Running the Coroutine:
+
+python
+Copy code
+asyncio.run(create_db())
+Using asyncio.run() to run the create_db coroutine. This initiates the asynchronous execution of the coroutine.
+*************************************************************************************************
+
+--------------------------------------------------------------------------------
+Create: crud.py
+Add Note
+
+
+from models import Note
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy import select
+from models import Note
+class CRUD:async def add(self, async_session: async_sessionmaker[AsyncSession], note: Note):
+        """
+        Create note object
+        """
+        async with async_session() as session:
+            session.add(note)
+            await session.commit()
+        return note
+-----------------------------------
+*****************************************************************************
+Imports:
+
+python
+Copy code
+from models import Note
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy import select
+from models import Note: Importing the Note model from the models module.
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession: Importing components related to asynchronous SQLAlchemy sessions.
+from sqlalchemy import select: Importing the select function from SQLAlchemy, which is used for creating SQL SELECT statements.
+CRUD Class:
+
+python
+Copy code
+class CRUD:
+Defining a class named CRUD.
+Asynchronous add Method:
+
+python
+Copy code
+async def add(self, async_session: async_sessionmaker[AsyncSession], note: Note):
+Defining an asynchronous method named add within the CRUD class.
+The method takes two parameters:
+async_session: An asynchronous session maker used for creating asynchronous database sessions.
+note: An instance of the Note model representing the note object to be added to the database.
+Asynchronous Session Context (async with async_session() as session):
+
+python
+Copy code
+async with async_session() as session:
+Using an asynchronous context manager to create an asynchronous database session (session). The async with block ensures proper handling of resources.
+Adding the Note Object to the Session and Committing:
+
+python
+Copy code
+session.add(note)
+await session.commit()
+Adding the note object to the session using session.add(note).
+Using await session.commit() to commit the changes to the database. This is important to persist the added note.
+Returning the Note Object:
+
+python
+Copy code
+return note
+Returning the note object after it has been successfully added to the database.
+*****************************************************************************
+
+Get Note
+
+-------------------
+
+class CRUD:async def get_all(self, async_session: async_sessionmaker[AsyncSession]):
+        """
+        Get all note objects from db
+        """
+        async with async_session() as session:
+            statement = select(Note).order_by(Note.id)
+            result = await session.execute(statement)
+            return result.scalars()
+
+-------------------
+
+Get Note By Id
+-----------------
+
+from models import Note
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy import select
+from models import Note
+class CRUD:async def get_by_id(
+        self, async_session: async_sessionmaker[AsyncSession], note_id: str
+    ):
+        """
+        Get note by id
+        """
+        async with async_session() as session:
+            statement = select(Note).filter(Note.id == note_id)
+            result = await session.execute(statement)
+            return result.scalars().one()
+
+---------------------------------------
+Update Note By Id 
+
+---------------------
+
+class CRUD:async def update(
+        self, async_session: async_sessionmaker[AsyncSession], note_id, data
+    ):
+        """
+        Update note by id
+        """
+        async with async_session() as session:
+            statement = select(Note).filter(Note.id == note_id)
+            result = await session.execute(statement)
+            note = result.scalars().one()
+            note.title = data["title"]
+            note.content = data["content"]
+            await session.commit()
+            return note
+
+-------------------------------------------
+Delete Note By Id
+--------------------------
+
+class CRUD:async def delete(self, async_session: async_sessionmaker[AsyncSession], note: Note):
+        """delete note by id
+        """
+        async with async_session() as session:
+            await session.delete(note)
+            await session.commit()
+        return {}
+
+-----------------------------------
+Create: main.py(update)
+
+--------------------------------
+
+from fastapi import FastAPI
+from sqlalchemy.ext.asyncio import async_sessionmaker
+from crud import CRUD
+from db import engine
+from schemas import NoteModel, NoteCreateModel
+from http import HTTPStatus
+from typing import List
+from models import Note
+import uuid
+app = FastAPI(
+    title="Noted API", description="This is a simple note taking service", docs_url="/"
+)
+#create an async session object for CRUD
+session = async_sessionmaker(bind=engine, expire_on_commit=False)
+db = CRUD()
+@app.post("/notes", status_code=HTTPStatus.CREATED)
+async def create_note(note_data: NoteCreateModel):
+    """API endpoint for creating a note resource
+    """
+    new_note = Note(
+        id=str(uuid.uuid4()), 
+        title=note_data.title, 
+        content=note_data.content
+    )
+    note = await db.add(session, new_note)
+    return note
+
+--------------------------
+
+Create: schema.py
+
+-----------------------
+
+from pydantic import BaseModel, ConfigDict
+from datetime import datetime
+#schema for returning a note
+class NoteModel(BaseModel):
+    id : str
+    title :str
+    content: str
+    date_created : datetime
+    model_config = ConfigDict(
+        from_attributes= True
+    )
+#schema for creating a note
+class NoteCreateModel(BaseModel):
+    title :str
+    content: str
+    model_config = ConfigDict(
+        from_attributes= True,
+        json_schema_extra={
+            "example":{
+                "title":"Sample title",
+                "content" : "Sample content"
+            }
+        }
+    )
+
+-----------------------------
+
+Create: main.py(update)
+
+-------------------------
+@app.get("/notes", response_model=List[NoteModel])
+async def get_all_notes():
+    """API endpoint for listing all note resources
+    """
+    notes = await db.get_all(session)
+    return notes
+
+
+@app.get("/note/{note_id}")
+async def get_note_by_id(note_id):
+    """API endpoint for retrieving a note by its ID"""
+    note = await db.get_by_id(session, note_id)
+    return note
+
+@app.patch("/note/{note_id}")
+async def update_note(note_id: str, data: NoteCreateModel):
+    """Update by ID    """
+    note = await db.update(
+        session, 
+        note_id, 
+        data={"title": data.title, "content": data.content}
+    )
+    return note
+@app.delete("/note/{note_id}")
+async def delete_note(note_id) -> None:
+    """Delete note by id    """
+    note = await db.get_by_id(session, note_id)
+    result = await db.delete(session, note)
+    return result
+
+-----------------------
+
+pip freeze > requirements.txt
+pip list
+
+
+JWT
+
+Definition: JSON Web Token (JWT) is an open standard (RFC 7519) that defines a compact and self-contained way for securely transmitting information between parties as a JSON object.
+Structure: JWTs consist of three parts separated by dots: Header, Payload, and Signature. These parts are base64-encoded JSON strings.
+Header: Contains the type of the token (JWT) and the signing algorithm being used, typically HMAC SHA256 or RSA.
+Payload: Contains the claims. Claims are statements about an entity (typically, the user) and additional data.
+Signature: Used to verify that the sender of the JWT is who it says it is and to ensure that the message wasn't changed along the way.
+Use Cases: JWTs are commonly used for authentication and authorization. They are often used in web development to securely transmit information between parties, such as between a client and a server, or between different services.
+Statelessness: JWTs are stateless, meaning that the server does not need to store the token. All the necessary information is contained within the token itself.
+Authentication: When a user logs in, a JWT is generated on the server, signed, and sent back to the client. The client includes this token in the headers of subsequent requests, allowing the server to authenticate the user.
+Claims: JWTs can include standard claims (e.g., expiration time, issuer) and custom claims. Claims provide information about the user and the token itself.
+Security: The signature of a JWT ensures its integrity. However, it's crucial to use secure practices, such as HTTPS, to protect the token during transmission.
+Expiration: JWTs can have an expiration time, after which they are considered invalid. This helps in enhancing security by limiting the window of opportunity for an attacker.
+
+
+JWT Token Implementaion
+
+pip install PyJWT
+pip install python-jose
+
+----------------------------------------
+## JWT TOKEN IMPLMENTAION##
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+import os
+# Define a security scheme using OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
+## JWT TOKEN IMPLMENTAION##
+
+@app.get("/unprotected")
+async def unprotected():
+    return {"message": "Anyone can see this"}
+@app.get("/protected")
+async def protected(current_user: dict = Depends(get_current_user)):
+    return {"message": "This is available for people with a valid token", "current_user": current_user}
+
+
+@app.post("/login")
+async def login(username: str, password: str):
+    # Replace this with your actual user authentication logic
+    print("username",username)
+    print("password",password)
+    if username == 'arif' and password == 'arif@123':
+        token = create_jwt_token(username)
+        return {"token": token, "username": username, "status": 200}
+    else:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+
+---------------------------------------
+
+# Helper function to create JWT token
+def create_jwt_token(username: str):
+    # Replace this with your actual JWT token creation logic
+    from datetime import datetime, timedelta
+    
+    expiration_time = datetime.utcnow() + timedelta(minutes=30)
+    token_data = {"sub": username, "exp": expiration_time}
+    token = jwt.encode(token_data, SECRET_KEY, ALGORITHM)
+    return token
+# Function to verify and decode the JWT token
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, ALGORITHM)
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    return {"username": username}
+
+
+
+
+
+
+
+
+
+
+
+deploy--------------------------
+podman build -t ddrapp .
+podman login ddrapp123.azurecr.io --username ddrapp123 --password 1ZowCzydym91r4ZHYqHXshgJal8l5lZ8fW6s/pBE85+ACRDvXC+L
+
+podman tag ddrapp ddrapp123.azurecr.io/ddrapp
+
+podman push ddrapp123.azurecr.io/ddrapp

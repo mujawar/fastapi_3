@@ -1,0 +1,82 @@
+from db import Base
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Text, Boolean
+from datetime import datetime
+
+class Task(Base):
+    __tablename__ = "tasks"
+    id: Mapped[str] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
+    completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    deadline: Mapped[datetime] = mapped_column(datetime, nullable=True)
+    date_created: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+    def __repr__(self) -> str:
+        return f"<Task {self.title} - Completed: {self.completed}>"
+
+
+
+--------------------------------------------------------------------------------------
+
+from db import Base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Text, ForeignKey
+from datetime import datetime
+
+class User(Base):
+    __tablename__ = "users"
+    id: Mapped[str] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
+
+    notes: Mapped[Note] = relationship("Note", back_populates="user")
+
+    def __repr__(self) -> str:
+        return f"<User {self.username}>"
+
+class Note(Base):
+    __tablename__ = "notes"
+    id: Mapped[str] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    date_created: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    user: Mapped[User] = relationship("User", back_populates="notes")
+
+    def __repr__(self) -> str:
+        return f"<Note {self.title} by {self.user.username}>"
+
+
+--------------------------------------------------------------------------------------------------------------
+from db import Base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Text, Integer, Float, Boolean, DateTime, ForeignKey
+from datetime import datetime
+
+class ComplexModel(Base):
+    __tablename__ = "complex_models"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    string_field: Mapped[str] = mapped_column(Text, nullable=False)
+    integer_field: Mapped[int] = mapped_column(Integer, nullable=True)
+    float_field: Mapped[float] = mapped_column(Float, nullable=True)
+    boolean_field: Mapped[bool] = mapped_column(Boolean, nullable=True)
+    date_time_field: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    foreign_key_field: Mapped[int] = mapped_column(ForeignKey('related_models.id'), nullable=True)
+    
+    related_model: Mapped['RelatedModel'] = relationship("RelatedModel", back_populates="complex_models")
+
+    def __repr__(self) -> str:
+        return f"<ComplexModel {self.id}>"
+
+class RelatedModel(Base):
+    __tablename__ = "related_models"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    
+    complex_models: Mapped[ComplexModel] = relationship("ComplexModel", back_populates="related_model")
+
+    def __repr__(self) -> str:
+        return f"<RelatedModel {self.name}>"
